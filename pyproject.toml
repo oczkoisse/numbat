@@ -1,10 +1,27 @@
 [build-system]
-requires = ["flit_core >=2,<4"]
-build-backend = "flit_core.buildapi"
+build-backend = "enscons.api"
+requires = ["pytoml>=0.1", "enscons>=0.23"]
 
-[tool.flit.metadata]
-module = "labeling_tool"
+[tool.enscons]
 author = "oczkoisse"
-author-email = "oczkoisse@pm.me"
-home-page = "https://github.com/oczkoisse/labeling-tool"
+author_email = "oczkoisse@pm.me"
+classifiers = [
+  "Programming Language :: Python :: 3",
+]
+description = "Tool for labeling data"
+dependencies = [
+  "PySide6",
+  "PyOpenGL",
+  "PyOpenGL-accelerate",
+  "av",
+  "numpy"
+]
+license = "LGPL"
+name = "labeling-tool"
+packages = ["labeling_tool"]
+src_root = "src"
+url = "https://github.com/oczkoisse/labeling-tool"
+version = "0.0.1"
 
+[tool.enscons.entry_points]
+console_scripts = ["labeling-tool = labeling_tool.MainWindow:main"]

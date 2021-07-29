@@ -160,5 +160,14 @@ cython_debug/
 
 # End of https://www.toptal.com/developers/gitignore/api/Python,VisualStudioCode
 
-# Qt
+### Qt ###
+# Ignore auto-generated .py files from .ui
 Ui_*.py
+
+### Misc ###
+# Data directory
+/data/
+# Enscons
+/setup-requires/
+/.sconsign.dblite
+/PKG-INFO

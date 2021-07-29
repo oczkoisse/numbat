@@ -84,10 +84,14 @@ class MainWindow(qtw.QMainWindow):
             timer.start()
 
 
-if __name__ == "__main__":
+def main():
     import sys
 
     app = qtw.QApplication(sys.argv)
     wnd = MainWindow()
     wnd.show()
     sys.exit(app.exec())
+
+
+if __name__ == "__main__":
+    main()
