@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytoml as toml
 import enscons
 
@@ -12,13 +14,31 @@ env = Environment(
     WHEEL_TAG=full_tag,
 )
 
-# Qt .ui files
-ui_source = env.Glob("src/labeling_tool/*.ui")
+# Find the ui to py converter provided by PySide on PATH
+# Note that this is necessary because SCons doesn't use system PATH by default
+uic = WhereIs("pyside6-uic")
+if uic is None:
+    print("Unable to locate pyside6-uic. Exiting.")
+    Exit(1)
+else:
+    # The converter would be located at env\Scripts|bin\pyside6-uic.exe
+    # So we put env\Scripts|bin\ on PATH
+    env.PrependENVPath('PATH', Path(uic).parent)
+    # and env\lib\site-packages on PYTHONPATH for above executable to access
+    # This is a bit of a hack, but it is probably the only way because
+    # VirtualEnv() in SCons seems to return virtual environment path relative
+    # to SConstruct file instead of the actual virtual environment the script
+    # is running in, which is problematic for isolated builds
+    env.PrependENVPath('PYTHONPATH', Path(uic).parent.parent / 'lib' / 'site-packages')
+
 uic_builder = Builder(
+    # Since we put the executable on PATH, we can call it directly
     action="pyside6-uic $SOURCE -o $TARGET", suffix=".py", src_suffix=".ui"
 )
 env.Append(BUILDERS={"Uic": uic_builder})
 
+# Qt .ui files
+ui_source = env.Glob("src/labeling_tool/*.ui")
 env.Uic(source=ui_source)
 
 py_source = env.Glob("src/labeling_tool/*.py", exclude=["Ui_*.py"])

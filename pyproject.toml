@@ -1,6 +1,6 @@
 [build-system]
 build-backend = "enscons.api"
-requires = ["pytoml>=0.1", "enscons>=0.23"]
+requires = ["pytoml>=0.1", "enscons>=0.23", "PySide6"]
 
 [tool.enscons]
 author = "oczkoisse"
@@ -23,5 +23,22 @@ src_root = "src"
 url = "https://github.com/oczkoisse/labeling-tool"
 version = "0.0.1"
 
+[tool.enscons.optional-dependencies]
+test = [
+	"pytest",
+	"tox >= 3.23.1",
+]
+
 [tool.enscons.entry_points]
 console_scripts = ["labeling-tool = labeling_tool.MainWindow:main"]
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = py37, py38, py39
+isolated_build = true
+
+[testenv]
+deps = pytest
+commands = pytest
+"""
