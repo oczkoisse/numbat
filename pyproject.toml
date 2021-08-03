@@ -25,20 +25,29 @@ version = "0.0.1"
 
 [tool.enscons.optional-dependencies]
 test = [
-	"pytest",
-	"tox >= 3.23.1",
+	"pytest >= 6.0", # Remember to change tool.pytest.ini_options.minversion
+	"tox >= 3.24.1", # Remember to change tox.minversion
 ]
 
 [tool.enscons.entry_points]
 console_scripts = ["labeling-tool = labeling_tool.MainWindow:main"]
 
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = [
+  "tests"
+]
+
 [tool.tox]
 legacy_tox_ini = """
 [tox]
+# support for backends not implementing optional hooks
+minversion = 3.24.1
 envlist = py37, py38, py39
 isolated_build = true
 
 [testenv]
-deps = pytest
+deps =
+    pytest >= 6.0 # for pytest settings in pyproject.toml
 commands = pytest
 """
