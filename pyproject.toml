@@ -25,8 +25,9 @@ version = "0.0.1"
 
 [tool.enscons.optional-dependencies]
 test = [
-	"pytest >= 6.0", # Remember to change tool.pytest.ini_options.minversion
-	"tox >= 3.24.1", # Remember to change tox.minversion
+  "pytest >= 6.0", # Remember to change tool.pytest.ini_options.minversion
+  "pytest-qt",
+  "tox >= 3.24.1", # Remember to change tox.minversion
 ]
 
 [tool.enscons.entry_points]
@@ -49,5 +50,6 @@ isolated_build = true
 [testenv]
 deps =
     pytest >= 6.0 # for pytest settings in pyproject.toml
+    pytest-qt
 commands = pytest
 """
