@@ -3,8 +3,11 @@ from PySide6 import QtCore as qtc
 from PySide6 import QtGui as qtg
 import av
 import av.video
+import numpy as np
+from typing import Tuple
 
 from labeling_tool.Ui_MainWindow import Ui_MainWindow
+from labeling_tool.VideoTimer import VideoTimer
 
 
 class MainWindow(qtw.QMainWindow):
@@ -17,10 +20,50 @@ class MainWindow(qtw.QMainWindow):
         super().__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self._decoder = None
+        self._timer = None
 
         self.ui.act_file_open.triggered.connect(self.on_file_open)
 
-    def frame_to_ycbcr(self, frame):
+    @qtc.Slot()
+    def on_file_open(self):
+        file_path, _ = qtw.QFileDialog.getOpenFileName(
+            self,
+            "Choose video",
+            qtc.QDir.homePath(),
+            filter=";;".join(
+                [MainWindow.video_files_filter, MainWindow.all_files_filter]
+            ),
+            selectedFilter=MainWindow.video_files_filter,
+        )
+
+        # Open file for FFMpeg
+        if len(file_path) > 0:
+            self._decoder = Decoder(file_path)
+            self._timer = VideoTimer()
+            self._timer.bind_decoder(self._decoder)
+            self._timer.bind_renderer(self.ui.glwgt_video)
+            self._timer.start()
+
+
+class Decoder(qtc.QObject):
+    decoded = qtc.Signal(float, tuple)
+
+    def __init__(self, file_path):
+        super().__init__()
+        self._path = file_path
+        self._container = av.open(self._path, mode="r")
+        self._decoder = self._container.decode(video=0)
+
+    def on_decode(self):
+        frame = next(self._decoder, None)
+        if frame is None:
+            return
+
+        frame_components = self.frame_to_ycbcr(frame)
+        self.decoded.emit(frame.time, frame_components)
+
+    def frame_to_ycbcr(self, frame) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         if frame.format.name not in ["yuv420p", "yuvj420p"]:
             # Only supported pixel format are yuv420p and yuvj420p
             # yuvj420p is simply yuv420p but with full colors (0-255)
@@ -52,36 +95,6 @@ class MainWindow(qtw.QMainWindow):
         cr_data = frame_data[start_offset:, :].reshape(-1, frame.width // 2)
 
         return y_data, cb_data, cr_data
-
-    @qtc.Slot()
-    def on_file_open(self):
-        file_path, _ = qtw.QFileDialog.getOpenFileName(
-            self,
-            "Choose video",
-            qtc.QDir.homePath(),
-            filter=";;".join(
-                [MainWindow.video_files_filter, MainWindow.all_files_filter]
-            ),
-            selectedFilter=MainWindow.video_files_filter,
-        )
-
-        # Open file for FFMpeg
-        if len(file_path) > 0:
-            container = av.open(file_path, mode="r")
-            decoder = container.decode(video=0)
-
-            elapsedTimer = qtc.QElapsedTimer()
-            timer = qtc.QTimer()
-            timer.setSingleShot(True)
-
-            elapsedTimer.start()
-            frame = next(decoder)
-            y, cb, cr = self.frame_to_ycbcr(frame)
-            self.ui.glwgt_video.refresh_frame(y, cb, cr)
-            self.ui.glwgt_video.update()
-
-            timer.timeout.connect(timeout_action)
-            timer.start()
 
 
 def main():

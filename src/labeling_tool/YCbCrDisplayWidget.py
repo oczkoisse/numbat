@@ -1,5 +1,6 @@
 from textwrap import dedent
 
+from PySide6 import QtCore as qtc
 from PySide6 import QtGui as qtg
 from PySide6 import QtOpenGLWidgets as qglw
 from PySide6 import QtOpenGL as qgl
@@ -13,8 +14,12 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
     Performance should be better than doing the conversion in software.
     """
 
+    prepared = qtc.Signal()
+    rendered = qtc.Signal()
+
     # Vertex shader source
-    _vtx_shader_src = dedent("""
+    _vtx_shader_src = dedent(
+        """
     #version 130
 
     // Position of vertex
@@ -29,10 +34,12 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
         texPos = texPosIn;
         gl_Position = vec4(posIn, 0.0, 1.0);
     }
-    """)
+    """
+    )
 
     # Fragment shader source
-    _frag_shader_src = dedent("""
+    _frag_shader_src = dedent(
+        """
     #version 130
 
     // Get texture coordinates from the vertex shader
@@ -68,28 +75,35 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
         rgb = cs_matrix * yuv;
         fragColor = vec4(rgb, 1.0);
     }
-    """)
-
+    """
+    )
 
     # Vertex data contains positions of our rectangle and corresponding
     # texture coordinates
     _vertices = [
         # position_x, position_y, texture_s, texture_t
-                -1.0,        1.0,       0.0,       0.0, # 0
-                 1.0,        1.0,       1.0,       0.0, # 1
-                -1.0,       -1.0,       0.0,       1.0, # 2
-                 1.0,       -1.0,       1.0,       1.0  # 3
+        -1.0,
+        1.0,
+        0.0,
+        0.0,  # 0
+        1.0,
+        1.0,
+        1.0,
+        0.0,  # 1
+        -1.0,
+        -1.0,
+        0.0,
+        1.0,  # 2
+        1.0,
+        -1.0,
+        1.0,
+        1.0,  # 3
     ]
-
 
     # Indices to draw a rectangle with TRIANGLES_STRIP
-    _indices = [
-        0, 1, 2, 3
-    ]
+    _indices = [0, 1, 2, 3]
 
-    _bt709_transform_rgb = [
-
-    ]
+    _bt709_transform_rgb = []
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -132,8 +146,8 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
         GL.glAttachShader(self._program, vtx_shader)
         GL.glAttachShader(self._program, frag_shader)
 
-        GL.glBindAttribLocation(self._program, 0, 'posIn')
-        GL.glBindAttribLocation(self._program, 1, 'texPosIn')
+        GL.glBindAttribLocation(self._program, 0, "posIn")
+        GL.glBindAttribLocation(self._program, 1, "texPosIn")
 
         self._link_program(self._program)
 
@@ -156,8 +170,12 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
         for tex in [self._tex_cb, self._tex_cr]:
             GL.glBindTexture(GL.GL_TEXTURE_2D, tex)
             # Wrapping behavior
-            GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE)
-            GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE)
+            GL.glTexParameteri(
+                GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE
+            )
+            GL.glTexParameteri(
+                GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE
+            )
             # Resizing behavior
             GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR)
             GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR)
@@ -172,26 +190,31 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
 
         GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self._buff_indices)
         indices = (GL.GLubyte * len(self._indices))(*self._indices)
-        GL.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, GL.sizeof(indices), indices, GL.GL_STATIC_DRAW)
+        GL.glBufferData(
+            GL.GL_ELEMENT_ARRAY_BUFFER, GL.sizeof(indices), indices, GL.GL_STATIC_DRAW
+        )
 
         float_size = GL.sizeof(GL.GLfloat)
 
-        GL.glVertexAttribPointer(0, 2, GL.GL_FLOAT, GL.GL_FALSE, 4 * float_size, GL.GLvoidp(0))
-        GL.glVertexAttribPointer(1, 2, GL.GL_FLOAT, GL.GL_FALSE, 4 * float_size, GL.GLvoidp(2 * float_size))
+        GL.glVertexAttribPointer(
+            0, 2, GL.GL_FLOAT, GL.GL_FALSE, 4 * float_size, GL.GLvoidp(0)
+        )
+        GL.glVertexAttribPointer(
+            1, 2, GL.GL_FLOAT, GL.GL_FALSE, 4 * float_size, GL.GLvoidp(2 * float_size)
+        )
         GL.glEnableVertexAttribArray(0)
         GL.glEnableVertexAttribArray(1)
 
     @staticmethod
-    def _compile_shader(shader, shader_source: str, encoding='utf-8'):
-        """Compile the shader against the given source
-        """
-        GL.glShaderSource(shader, [ shader_source.encode(encoding) ])
+    def _compile_shader(shader, shader_source: str, encoding="utf-8"):
+        """Compile the shader against the given source"""
+        GL.glShaderSource(shader, [shader_source.encode(encoding)])
         GL.glCompileShader(shader)
         compile_status = GL.glGetShaderiv(shader, GL.GL_COMPILE_STATUS)
         if compile_status != GL.GL_TRUE:
             # Compilation failed
             log = GL.glGetShaderInfoLog(shader)
-            raise ValueError(f'ERROR: Shader compilation failed\n\n{log}')
+            raise ValueError(f"ERROR: Shader compilation failed\n\n{log}")
 
     @staticmethod
     def _link_program(program):
@@ -200,7 +223,7 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
         if link_status != GL.GL_TRUE:
             # Linking failed
             log = GL.glGetProgramInfoLog(program)
-            raise ValueError(f'ERROR: Program linking failed\n\n{log}')
+            raise ValueError(f"ERROR: Program linking failed\n\n{log}")
 
     def initializeGL(self):
         """Set up any required OpenGL resources and state
@@ -224,10 +247,9 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
         # GL.glUniformMatrix3fv()
 
         # Assign texture units 0, 1 and 2 to Y, Cb and Cr textures
-        for i, tex_name in enumerate(['tex_y', 'tex_cb', 'tex_cr']):
+        for i, tex_name in enumerate(["tex_y", "tex_cb", "tex_cr"]):
             tex_loc = GL.glGetUniformLocation(self._program, tex_name)
             GL.glUniform1i(tex_loc, i)
-
 
     def paintGL(self):
         """Paint the scene using OpenGL functions
@@ -270,7 +292,9 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
 
         self.doneCurrent()
 
-    def refresh_frame(self, y, cb, cr):
+    def on_prepare(self, frame_components):
+        y, cb, cr = frame_components
+
         self.makeCurrent()
 
         if self.width < 0 or self.height < 0:
@@ -278,22 +302,76 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
 
             GL.glActiveTexture(GL.GL_TEXTURE0)
             GL.glBindTexture(GL.GL_TEXTURE_2D, self._tex_y)
-            GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RED, self.width, self.height, 0, GL.GL_RED, GL.GL_UNSIGNED_BYTE, None)
+            GL.glTexImage2D(
+                GL.GL_TEXTURE_2D,
+                0,
+                GL.GL_RED,
+                self.width,
+                self.height,
+                0,
+                GL.GL_RED,
+                GL.GL_UNSIGNED_BYTE,
+                None,
+            )
 
             for i, tex in enumerate([self._tex_cb, self._tex_cr], start=1):
                 GL.glActiveTexture(GL.GL_TEXTURE0 + i)
                 GL.glBindTexture(GL.GL_TEXTURE_2D, tex)
-                GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RED, self.width // 2, self.height // 2, 0, GL.GL_RED, GL.GL_UNSIGNED_BYTE, None)
-
+                GL.glTexImage2D(
+                    GL.GL_TEXTURE_2D,
+                    0,
+                    GL.GL_RED,
+                    self.width // 2,
+                    self.height // 2,
+                    0,
+                    GL.GL_RED,
+                    GL.GL_UNSIGNED_BYTE,
+                    None,
+                )
 
         GL.glActiveTexture(GL.GL_TEXTURE0)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self._tex_y)
-        GL.glTexSubImage2D(GL.GL_TEXTURE_2D, 0, 0, 0, self.width, self.height, GL.GL_RED, GL.GL_UNSIGNED_BYTE, y)
+        GL.glTexSubImage2D(
+            GL.GL_TEXTURE_2D,
+            0,
+            0,
+            0,
+            self.width,
+            self.height,
+            GL.GL_RED,
+            GL.GL_UNSIGNED_BYTE,
+            y,
+        )
         GL.glActiveTexture(GL.GL_TEXTURE1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self._tex_cb)
-        GL.glTexSubImage2D(GL.GL_TEXTURE_2D, 0, 0, 0, self.width // 2, self.height // 2, GL.GL_RED, GL.GL_UNSIGNED_BYTE, cb)
+        GL.glTexSubImage2D(
+            GL.GL_TEXTURE_2D,
+            0,
+            0,
+            0,
+            self.width // 2,
+            self.height // 2,
+            GL.GL_RED,
+            GL.GL_UNSIGNED_BYTE,
+            cb,
+        )
         GL.glActiveTexture(GL.GL_TEXTURE2)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self._tex_cr)
-        GL.glTexSubImage2D(GL.GL_TEXTURE_2D, 0, 0, 0, self.width // 2, self.height // 2, GL.GL_RED, GL.GL_UNSIGNED_BYTE, cr)
+        GL.glTexSubImage2D(
+            GL.GL_TEXTURE_2D,
+            0,
+            0,
+            0,
+            self.width // 2,
+            self.height // 2,
+            GL.GL_RED,
+            GL.GL_UNSIGNED_BYTE,
+            cr,
+        )
 
         self.doneCurrent()
+        self.prepared.emit()
+
+    def on_render(self):
+        self.update()
+        self.rendered.emit()
