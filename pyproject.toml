@@ -51,5 +51,5 @@ isolated_build = true
 deps =
     pytest >= 6.0 # for pytest settings in pyproject.toml
     pytest-qt
-commands = pytest
+commands = pytest {posargs}
 """
