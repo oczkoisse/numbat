@@ -1,6 +1,6 @@
-from PySide6 import QtCore as qtc
-import numpy as np
 from typing import Tuple
+
+from PySide6 import QtCore as qtc
 
 
 class VideoTimer(qtc.QObject):
@@ -41,14 +41,12 @@ class VideoTimer(qtc.QObject):
         self._present_after_ms = 0
 
     @qtc.Slot(float, tuple)
-    def on_decoded(
-        self, pt_sec: float, frame: Tuple[np.ndarray, np.ndarray, np.ndarray]
-    ):
+    def on_decoded(self, pt_sec: float, frame: Tuple):
         """Get notified when a frame is decoded.
 
         Args:
             pt_sec (float): presentation time in seconds
-            frame: frame components received from decoder
+            frame (Tuple): frame components received from decoder
 
         Raises:
             ValueError: if presentation time is lesser than the previous one
