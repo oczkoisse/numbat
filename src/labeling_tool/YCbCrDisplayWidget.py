@@ -132,8 +132,7 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
 
         self._media_path = None
 
-        self.width = -1
-        self.height = -1
+        self._tex_allocated = False
 
     def _compile_gl(self):
         self._program = GL.glCreateProgram()
@@ -295,7 +294,7 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
     def on_prepare(self, ycbcr):
         self.makeCurrent()
 
-        if self.width < 0 or self.height < 0:
+        if not self._tex_allocated:
             for i, plane, tex in zip(
                 range(3), ycbcr, [self._tex_y, self._tex_cb, self._tex_cr]
             ):
@@ -313,6 +312,7 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
                     GL.GL_UNSIGNED_BYTE,
                     None,
                 )
+            self._tex_allocated = True
 
         for i, plane, tex in zip(
             range(3), ycbcr, [self._tex_y, self._tex_cb, self._tex_cr]
