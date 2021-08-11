@@ -292,82 +292,45 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
 
         self.doneCurrent()
 
-    def on_prepare(self, frame_components):
-        y, cb, cr = frame_components
-
+    def on_prepare(self, ycbcr):
         self.makeCurrent()
 
         if self.width < 0 or self.height < 0:
-            self.height, self.width = y.shape
-
-            GL.glActiveTexture(GL.GL_TEXTURE0)
-            GL.glBindTexture(GL.GL_TEXTURE_2D, self._tex_y)
-            GL.glTexImage2D(
-                GL.GL_TEXTURE_2D,
-                0,
-                GL.GL_RED,
-                self.width,
-                self.height,
-                0,
-                GL.GL_RED,
-                GL.GL_UNSIGNED_BYTE,
-                None,
-            )
-
-            for i, tex in enumerate([self._tex_cb, self._tex_cr], start=1):
+            for i, plane, tex in zip(
+                range(3), ycbcr, [self._tex_y, self._tex_cb, self._tex_cr]
+            ):
                 GL.glActiveTexture(GL.GL_TEXTURE0 + i)
                 GL.glBindTexture(GL.GL_TEXTURE_2D, tex)
+                h, w = plane.shape
                 GL.glTexImage2D(
                     GL.GL_TEXTURE_2D,
                     0,
                     GL.GL_RED,
-                    self.width // 2,
-                    self.height // 2,
+                    w,
+                    h,
                     0,
                     GL.GL_RED,
                     GL.GL_UNSIGNED_BYTE,
                     None,
                 )
 
-        GL.glActiveTexture(GL.GL_TEXTURE0)
-        GL.glBindTexture(GL.GL_TEXTURE_2D, self._tex_y)
-        GL.glTexSubImage2D(
-            GL.GL_TEXTURE_2D,
-            0,
-            0,
-            0,
-            self.width,
-            self.height,
-            GL.GL_RED,
-            GL.GL_UNSIGNED_BYTE,
-            y,
-        )
-        GL.glActiveTexture(GL.GL_TEXTURE1)
-        GL.glBindTexture(GL.GL_TEXTURE_2D, self._tex_cb)
-        GL.glTexSubImage2D(
-            GL.GL_TEXTURE_2D,
-            0,
-            0,
-            0,
-            self.width // 2,
-            self.height // 2,
-            GL.GL_RED,
-            GL.GL_UNSIGNED_BYTE,
-            cb,
-        )
-        GL.glActiveTexture(GL.GL_TEXTURE2)
-        GL.glBindTexture(GL.GL_TEXTURE_2D, self._tex_cr)
-        GL.glTexSubImage2D(
-            GL.GL_TEXTURE_2D,
-            0,
-            0,
-            0,
-            self.width // 2,
-            self.height // 2,
-            GL.GL_RED,
-            GL.GL_UNSIGNED_BYTE,
-            cr,
-        )
+        for i, plane, tex in zip(
+            range(3), ycbcr, [self._tex_y, self._tex_cb, self._tex_cr]
+        ):
+            GL.glActiveTexture(GL.GL_TEXTURE0 + i)
+            GL.glBindTexture(GL.GL_TEXTURE_2D, tex)
+            h, w = plane.shape
+            GL.glTexImage2D(
+                GL.GL_TEXTURE_2D,
+                0,
+                GL.GL_RED,
+                w,
+                h,
+                0,
+                GL.GL_RED,
+                GL.GL_UNSIGNED_BYTE,
+                plane.reshape(-1),
+            )
 
         self.doneCurrent()
         self.prepared.emit()
