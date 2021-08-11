@@ -33,12 +33,12 @@ class VideoTimer(qtc.QObject):
         self._timer = qtc.QTimer()
         self._timer.setSingleShot(True)
         self._timer.setTimerType(qtc.Qt.TimerType.PreciseTimer)
-        self._timer.timeout.connect(self.render)
+        self._timer.timeout.connect(self._on_timeout)
         # Previous presentation time in ms
         # Initially -1 so that first timestamp >= this timestamp
         self._last_presented_at = -1
-        # Time until presentation in ms
-        self._present_after_ms = 0
+        # Presentation time in ms
+        self._present_at = 0
 
     @qtc.Slot(float, tuple)
     def on_decoded(self, pt_sec: float, frame: Tuple):
@@ -47,34 +47,52 @@ class VideoTimer(qtc.QObject):
         Args:
             pt_sec (float): presentation time in seconds
             frame (Tuple): frame components received from decoder
-
-        Raises:
-            ValueError: if presentation time is lesser than the previous one
         """
-        present_at_ms = pt_sec * 1000
-        if present_at_ms <= self._last_presented_at:
-            # Presentation timestamps should be monotonic but are not
-            raise ValueError(
-                "Encountered non-monotonic pts value {cur} after {prv}".format(
-                    cur=present_at_ms, prv=self._last_presented_at
-                )
-            )
-        self._present_after_ms = present_at_ms - self._last_presented_at
-        self._last_presented_at = present_at_ms
+        # First frame
+        if self._last_presented_at < 0:
+            # Start the clock only after decoding the first frame
+            self._clock.start()
 
+        present_at_ms = int(pt_sec * 1000)
+        if present_at_ms <= self._last_presented_at:
+            # Skip frame since last frame was drawn too late
+            qtc.qDebug("Skipping frame with pts {}".format(present_at_ms))
+            self.decode.emit()
+            return
+        # Update current presentation time for later timer call
+        self._present_at = present_at_ms
         self.prepare.emit(frame)
+
+    @qtc.Slot()
+    def _on_timeout(self):
+        """Handle timer expiration.
+
+        Timer is started after resources are allocated for rendering. Timer is
+        only started when some positive time is left for render call.
+        """
+        self._last_presented_at = self._clock.elapsed()
+        qtc.qDebug(
+            "Presented frame with pts {} at {} ms".format(
+                self._present_at, self._last_presented_at
+            )
+        )
+        self.render.emit()
 
     @qtc.Slot()
     def on_rendered(self):
         """Get notified when rendering is finished."""
         # Start the cycle again
-        self.start()
+        self.decode.emit()
 
     @qtc.Slot()
     def on_prepared(self):
         """Get notified when resource allocation for rendering is complete."""
-        time_spent_ms = self._clock.elapsed()
-        self._timer.start(max(self._present_after_ms - time_spent_ms, 0))
+        rem = self._present_at - self._clock.elapsed()
+        if rem <= 0:
+            # No time left, just trigger timeout handler directly
+            self._on_timeout()
+        else:
+            self._timer.start(rem)
 
     def stop(self):
         """Stop the timer."""
@@ -85,7 +103,6 @@ class VideoTimer(qtc.QObject):
 
         Must bind a decoder and renderer before calling.
         """
-        self._clock.start()
         self.decode.emit()
 
     def bind_decoder(self, decoder):
