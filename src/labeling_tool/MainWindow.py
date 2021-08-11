@@ -1,10 +1,11 @@
+from typing import Tuple
+
 from PySide6 import QtWidgets as qtw
 from PySide6 import QtCore as qtc
 from PySide6 import QtGui as qtg
 import av
 import av.video
 import numpy as np
-from typing import Tuple
 
 from labeling_tool.Ui_MainWindow import Ui_MainWindow
 from labeling_tool.VideoTimer import VideoTimer
@@ -63,10 +64,6 @@ class Decoder(qtc.QObject):
         if frame is None:
             return
 
-        frame_components = self.frame_to_ycbcr(frame)
-        self.decoded.emit(frame.time, frame_components)
-
-    def frame_to_ycbcr(self, frame) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         if frame.format.name not in ["yuv420p", "yuvj420p"]:
             # Only supported pixel format are yuv420p and yuvj420p
             # yuvj420p is simply yuv420p but with full colors (0-255)
@@ -74,30 +71,26 @@ class Decoder(qtc.QObject):
                 f"Unsupported pixel format '{frame.format.name} 'in video. Only yuv420p/yuvj420p videos are supported."
             )
 
-        # By default, src_colorspace and dst_colorspace are set to
-        # None, which translates to sws_cs_DEFAULT colorspace
-        # Undocumented, but if both src and dst colorspaces are same,
-        # even if they are not the same as the colorspace of the frame,
-        # no new frame copy is created and frame_data is a numpy
-        # array created using the buffer protocol
-        frame_data = frame.to_ndarray(format=frame.format.name)
+        y, cb, cr = map(self._remove_padding, frame.planes)
+        self.decoded.emit(frame.time, (y, cb, cr))
 
-        # For YCbCr 420p frames, the returned array is shaped with the
-        # same width as the full frame. First comes the Luma channel
-        # with the same height as the full frame. Next come the chroma
-        # channels with the same width as the full frame but height is
-        # a quarter of the full frame height
-        start_offset = 0
-        end_offset = frame.height
-        y_data = frame_data[start_offset:end_offset, :]
-        start_offset = end_offset
-        end_offset = (5 * frame.height) // 4
-        cb_data = frame_data[start_offset:end_offset, :].reshape(-1, frame.width // 2)
-        start_offset = end_offset
-        end_offset = None
-        cr_data = frame_data[start_offset:, :].reshape(-1, frame.width // 2)
+    def _remove_padding(self, plane):
+        """Remove padding from a video frame's plane.
 
-        return y_data, cb_data, cr_data
+        Args:
+            plane (av.video.plane.VideoPlane): the plane to remove padding from
+
+        Returns:
+            numpy.array: 2D array representing the plane data sans the padding
+        """
+        buf_width = plane.line_size
+        bytes_per_pixel = 1
+        frame_width = plane.width * bytes_per_pixel
+        arr = np.frombuffer(plane, np.uint8)
+        if buf_width != frame_width:
+            # Slice (create a view) at the frame width
+            arr = arr.reshape(-1, buf_width)[:, :frame_width]
+        return arr.reshape(-1, frame_width)
 
 
 def main():
