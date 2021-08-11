@@ -15,25 +15,27 @@ class VideoTimer(qtc.QObject):
     sync with presenation timestamps.
     """
 
-    # Indicate that a receiver should start decoding
+    # Start decoding
     decode = qtc.Signal()
 
-    # Indicate that a receiver should start preparing
+    # Start allocating resources for rendering
     prepare = qtc.Signal(tuple)
 
-    # Indicate that a receiver should start rendering
+    # Start rendering
     render = qtc.Signal()
 
     def __init__(self):
         """Create a video timer."""
         super().__init__()
+        # Reference clock to compare the timestamps with
         self._clock = qtc.QElapsedTimer()
-        # Create a single shot timer that sends the 'render' signal on timeout
+        # Single shot timer that sends the 'render' signal on timeout
         self._timer = qtc.QTimer()
         self._timer.setSingleShot(True)
         self._timer.setTimerType(qtc.Qt.TimerType.PreciseTimer)
         self._timer.timeout.connect(self.render)
         # Previous presentation time in ms
+        # Initially -1 so that first timestamp >= this timestamp
         self._last_presented_at = -1
         # Time until presentation in ms
         self._present_after_ms = 0
@@ -81,7 +83,7 @@ class VideoTimer(qtc.QObject):
         self._timer.stop()
 
     def start(self):
-        """Begin decoding and rendering.
+        """Start sending timed signals to decoder and renderer.
 
         Must bind a decoder and renderer before calling.
         """
@@ -89,10 +91,27 @@ class VideoTimer(qtc.QObject):
         self.decode.emit()
 
     def bind_decoder(self, decoder):
+        """Bind a decoder with this timer.
+
+        A decoder object must implement 'decoded' signal. Additionally, it must
+        implement 'on_decode' slot to handle 'decode' signal of timer.
+
+        Args:
+            decoder (Any): any object that behaves like a decoder
+        """
         decoder.decoded.connect(self.on_decoded)
         self.decode.connect(decoder.on_decode)
 
     def bind_renderer(self, renderer):
+        """Bind a renderer with this timer.
+
+        A renderer object must implement 'prepared' and 'rendered' signals.
+        Additionally, a renderer object must implement 'on_prepare' and
+        'on_render' slots to handle 'prepare' and 'render' signal of timer.
+
+        Args:
+            renderer (Any): any object that behaves like a renderer
+        """
         self.prepare.connect(renderer.on_prepare)
         renderer.prepared.connect(self.on_prepared)
         self.render.connect(renderer.on_render)
