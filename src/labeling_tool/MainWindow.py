@@ -53,6 +53,9 @@ class Decoder(qtc.QObject):
         super().__init__()
         self._path = file_path
         self._container = av.open(self._path, mode="r")
+        # Default is SLICE: allows multiple threads to decode a single frame
+        # FRAME: Enable multiple threads to decode independent frames
+        self._container.streams.video[0].thread_type = "FRAME"
         self._decoder = self._container.decode(video=0)
 
     def on_decode(self):
