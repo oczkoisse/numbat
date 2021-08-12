@@ -51,6 +51,10 @@ class Decoder(qtc.QObject):
     def _remove_padding(self, plane: av.video.plane.VideoPlane) -> np.ndarray:
         """Remove padding from a video frame's plane.
 
+        If the frame width is not aligned to a 16 pixel boundary, the aligned
+        memory boundary needs to be found first. The trimming then happens at
+        the aligned boundary instead.
+
         Args:
             plane: The plane to remove padding from.
 
@@ -62,6 +66,13 @@ class Decoder(qtc.QObject):
         frame_width = plane.width * bytes_per_pixel
         arr = np.frombuffer(plane, np.uint8)
         if buf_width != frame_width:
-            # Slice (create a view) at the frame width
+            align_to = 16
+            # Frame width that is aligned up with a 16 pixel boundary
+            # See FFALIGN():
+            # https://svn.ffmpeg.org/doxygen/4.1/macros_8h_source.html#l00048
+            # See avcode_align_dimensions2():
+            # https://svn.ffmpeg.org/doxygen/4.1/libavcodec_2utils_8c_source.html#l00154
+            frame_width = (frame_width + align_to - 1) & ~(align_to - 1)
+            # Slice (create a view) at the aligned boundary
             arr = arr.reshape(-1, buf_width)[:, :frame_width]
         return arr.reshape(-1, frame_width)
