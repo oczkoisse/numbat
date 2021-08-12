@@ -1,27 +1,25 @@
-from typing import Tuple
+"""Provides VideoTimer, a utility class to coordinate frame timings."""
+from typing import Any, Tuple
 
 from PySide6 import QtCore as qtc
 
 
 class VideoTimer(qtc.QObject):
-    """A timer class to present video frames at their presentation time.
+    """A timer to present video frames at their presentation time.
 
     Frames in a video file have presentation timestamps that indicate an
     absolute time in terms of video duration when the frame should be rendered.
-    A VideoTimer emits signals: 'decode', 'prepare' and 'render'. A receiver
-    that connects to 'decode' signal is interested in timing its decoding
-    process to remain in sync with presenation timestamps. A receiver that
-    connects to 'prepare' and 'render' is interested in timing its remain in
-    sync with presenation timestamps.
+    A video timer provides the functionality to time the various stages of
+    reading a video by emitting 'decode', 'prepare' and 'render' signals.
+
+    Attributes:
+        decode (PySide6.QtCore.Signal): Start decoding
+        prepare (PySide6.QtCore.Signal): Allocate resources for rendering
+        render (PySide6.QtCore.Signal): Start rendering
     """
 
-    # Start decoding
     decode = qtc.Signal()
-
-    # Start allocating resources for rendering
     prepare = qtc.Signal(tuple)
-
-    # Start rendering
     render = qtc.Signal()
 
     def __init__(self):
@@ -45,8 +43,8 @@ class VideoTimer(qtc.QObject):
         """Get notified when a frame is decoded.
 
         Args:
-            pt_sec (float): presentation time in seconds
-            frame (Tuple): frame components received from decoder
+            pt_sec (float): Presentation time in seconds
+            frame (Tuple): Frame components received from decoder
         """
         # First frame
         if self._last_presented_at < 0:
@@ -67,8 +65,8 @@ class VideoTimer(qtc.QObject):
     def _on_timeout(self):
         """Handle timer expiration.
 
-        Timer is started after resources are allocated for rendering. Timer is
-        only started when some positive time is left for render call.
+        Timer is started after resources are allocated for rendering and only
+        if some positive time is left for render call.
         """
         self._last_presented_at = self._clock.elapsed()
         qtc.qDebug(
@@ -105,19 +103,19 @@ class VideoTimer(qtc.QObject):
         """
         self.decode.emit()
 
-    def bind_decoder(self, decoder):
+    def bind_decoder(self, decoder: Any):
         """Bind a decoder with this timer.
 
         A decoder object must implement 'decoded' signal. Additionally, it must
         implement 'on_decode' slot to handle 'decode' signal of timer.
 
         Args:
-            decoder (Any): any object that behaves like a decoder
+            decoder: An object that behaves like a decoder
         """
         decoder.decoded.connect(self.on_decoded)
         self.decode.connect(decoder.on_decode)
 
-    def bind_renderer(self, renderer):
+    def bind_renderer(self, renderer: Any):
         """Bind a renderer with this timer.
 
         A renderer object must implement 'prepared' and 'rendered' signals.
@@ -125,7 +123,7 @@ class VideoTimer(qtc.QObject):
         'on_render' slots to handle 'prepare' and 'render' signal of timer.
 
         Args:
-            renderer (Any): any object that behaves like a renderer
+            renderer: An object that behaves like a renderer
         """
         self.prepare.connect(renderer.on_prepare)
         renderer.prepared.connect(self.on_prepared)
