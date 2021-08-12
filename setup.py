@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # Call enscons to emulate setup.py, installing if necessary.
 
-import sys, subprocess
+import sys
+import subprocess
 
 sys.path[0:0] = ["setup-requires"]
 
