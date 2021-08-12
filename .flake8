@@ -2,6 +2,8 @@
 # For black compatibility
 max-line-length = 88
 extend-ignore = E203
+# PEP-8 max length for comments/docstrings
+max-doc-length = 79
 # Exclude patterns
 exclude =
     # Some defaults
