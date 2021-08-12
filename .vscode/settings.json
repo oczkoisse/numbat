@@ -4,8 +4,9 @@
     "python.linting.enabled": true,
     "python.formatting.provider": "black",
     "editor.formatOnSave": true,
-    "python.linting.flake8Args": [
-        "--docstring-convention google"
+    "python.linting.pydocstyleEnabled": true,
+    "python.linting.pydocstyleArgs": [
+        "--convention=google"
     ],
     "autoDocstring.docstringFormat": "google",
 }
