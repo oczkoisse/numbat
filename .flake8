@@ -1,0 +1,16 @@
+[flake8]
+# For black compatibility
+max-line-length = 88
+extend-ignore = E203
+# Exclude patterns
+exclude =
+    # Some defaults
+    .git
+    __pycache__
+    .tox
+    .eggs
+    *.egg
+    # Auto-generated from .ui files
+    Ui_*.py
+    # Virtual environment
+    .venv
