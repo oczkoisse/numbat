@@ -1,6 +1,9 @@
+"""Provides YCbCrDisplayWidget, a widget to display YCbCr video frames."""
 from textwrap import dedent
+from typing import Tuple
 
 from PySide6 import QtCore as qtc
+from PySide6 import QtWidgets as qtw
 from PySide6 import QtGui as qtg
 from PySide6 import QtOpenGLWidgets as qglw
 from PySide6 import QtOpenGL as qgl
@@ -8,10 +11,14 @@ from OpenGL import GL
 
 
 class YCbCrDisplayWidget(qglw.QOpenGLWidget):
-    """Widget for display YUV420p frames
+    """OpenGL widget to display YCbCr 4:2:0 planar frames.
 
-    Internally, the widget uses OpenGL shaders to convert YUV420p to RGB space.
-    Performance should be better than doing the conversion in software.
+    The widget uses OpenGL shaders to convert YCbCr to RGB space. Performance
+    should be better than doing the conversion in software.
+
+    Attributes:
+        prepared (PySide6.QtCore.Signal): Finished preparations for rendering
+        rendered (PySide6.QtCore.Signal): Finished rendering the frame
     """
 
     prepared = qtc.Signal()
@@ -68,7 +75,7 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
         vec3 rgb;
 
         yuv.x = texture(tex_y, texPos).r;
-        // Offset chroma channels to between -0.5 to 0.5 for colorspace conversion
+        // Clamp chroma channels between -0.5 to 0.5 for colorspace conversion
         yuv.y = texture(tex_cb, texPos).r - 0.5;
         yuv.z = texture(tex_cr, texPos).r - 0.5;
 
@@ -105,7 +112,12 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
 
     _bt709_transform_rgb = []
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: qtw.QWidget = None):
+        """Create a YCbCr display widget.
+
+        Args:
+            parent (optional): Parent widget. Defaults to None.
+        """
         super().__init__(parent=parent)
 
         # Request OpenGL 3.0 Core Profile context
@@ -135,6 +147,7 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
         self._tex_allocated = False
 
     def _compile_gl(self):
+        """Compile shaders and link OpenGL program."""
         self._program = GL.glCreateProgram()
 
         vtx_shader = GL.glCreateShader(GL.GL_VERTEX_SHADER)
@@ -154,6 +167,7 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
         GL.glDeleteShader(frag_shader)
 
     def _init_gl_buffers(self):
+        """Create and initialize OpenGL buffers."""
         self._tex_y = GL.glGenTextures(1)
         # Luma texture (Y)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self._tex_y)
@@ -205,8 +219,17 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
         GL.glEnableVertexAttribArray(1)
 
     @staticmethod
-    def _compile_shader(shader, shader_source: str, encoding="utf-8"):
-        """Compile the shader against the given source"""
+    def _compile_shader(shader: GL.GLuint, shader_source: str, encoding: str = "utf-8"):
+        """Compile the shader against the given source.
+
+        Args:
+            shader: Handle to the shader
+            shader_source: Shader source code
+            encoding (optional): Source code encoding. Defaults to "utf-8"
+
+        Raises:
+            ValueError: If shader compilation fails
+        """
         GL.glShaderSource(shader, [shader_source.encode(encoding)])
         GL.glCompileShader(shader)
         compile_status = GL.glGetShaderiv(shader, GL.GL_COMPILE_STATUS)
@@ -216,7 +239,15 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
             raise ValueError(f"ERROR: Shader compilation failed\n\n{log}")
 
     @staticmethod
-    def _link_program(program):
+    def _link_program(program: GL.GLuint):
+        """Link the OpenGL program.
+
+        Args:
+            program: Handle to OpenGL program
+
+        Raises:
+            ValueError: If program linking fails
+        """
         GL.glLinkProgram(program)
         link_status = GL.glGetProgramiv(program, GL.GL_LINK_STATUS)
         if link_status != GL.GL_TRUE:
@@ -225,13 +256,13 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
             raise ValueError(f"ERROR: Program linking failed\n\n{log}")
 
     def initializeGL(self):
-        """Set up any required OpenGL resources and state
+        """Set up any required OpenGL resources and state.
 
         Called once before the first time resizeGL() or paintGL() is called.
         The rendering context has already been made current before this
         function is called. Note however that the framebuffer is not yet
         available at this stage, so avoid issuing draw calls from here. Defer
-         such calls to paintGL() instead.
+        such calls to paintGL() instead.
         """
         # Get the OpenGL functions appropriate to our current context
         self.context().aboutToBeDestroyed.connect(self.cleanup)
@@ -251,7 +282,7 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
             GL.glUniform1i(tex_loc, i)
 
     def paintGL(self):
-        """Paint the scene using OpenGL functions
+        """Paint the scene using OpenGL functions.
 
         The rendering context has already been made current before this
         function is called. The framebuffer is also bound and the viewport is
@@ -265,14 +296,19 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
         GL.glDrawElements(GL.GL_TRIANGLE_STRIP, 4, GL.GL_UNSIGNED_BYTE, GL.GLvoidp(0))
 
     def resizeGL(self, width: int, height: int):
-        """Called whenever the widget has been resized
+        """Called whenever the widget has been resized.
 
         The rendering context has already been made current before this
         function is called. The framebuffer is also bound.
+
+        Args:
+            width: New width of window
+            height: New height of window
         """
         GL.glViewport(0, 0, width, height)
 
     def cleanup(self):
+        """Release all acquired resources."""
         # Must make context current before using OpenGL API
         self.makeCurrent()
 
@@ -291,7 +327,14 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
 
         self.doneCurrent()
 
-    def on_prepare(self, ycbcr):
+    def on_prepare(self, ycbcr: Tuple):
+        """Allocate space for textures and and initialize with frame data.
+
+        This method will emit 'prepared' signal when done.
+
+        Args:
+            ycbcr (Tuple): A tuple of frame planes
+        """
         self.makeCurrent()
 
         if not self._tex_allocated:
@@ -336,5 +379,9 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
         self.prepared.emit()
 
     def on_render(self):
+        """Render the frame.
+
+        This method will emit 'rendered' signal when done.
+        """
         self.update()
         self.rendered.emit()
