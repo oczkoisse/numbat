@@ -61,3 +61,12 @@ exclude = [
   "src/*Ui_*.py", # Ignore .py files auto-generated from .ui files
   "tests/*.py",   # Ignore tests
 ]
+
+[tool.pydocstyle]
+convention = "google"
+# Don't match any .py file starting with
+# - setup
+# - Ui_
+# - test_
+# TODO: improve regex to allow matching names of form 'setup.*\.py'
+match = '(?!(setup|Ui_|test_)).*\.py'
