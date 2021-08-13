@@ -58,5 +58,6 @@ commands = pytest {posargs}
 fail-under = 80
 exclude = [
   "setup.py",
-  "src/*Ui_*.py" # Ignore .py files auto-generated from .ui files
+  "src/*Ui_*.py", # Ignore .py files auto-generated from .ui files
+  "tests/*.py",   # Ignore tests
 ]
