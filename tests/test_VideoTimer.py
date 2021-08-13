@@ -1,6 +1,8 @@
-from labeling_tool.VideoTimer import VideoTimer
 import time
+
 from PySide6 import QtCore as qtc
+
+from labeling_tool.VideoTimer import VideoTimer
 
 
 class DummyDecoder(qtc.QObject):

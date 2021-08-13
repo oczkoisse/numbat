@@ -2,12 +2,12 @@
 from textwrap import dedent
 from typing import Tuple
 
-from PySide6 import QtCore as qtc
-from PySide6 import QtWidgets as qtw
-from PySide6 import QtGui as qtg
-from PySide6 import QtOpenGLWidgets as qglw
-from PySide6 import QtOpenGL as qgl
 from OpenGL import GL
+from PySide6 import QtCore as qtc
+from PySide6 import QtGui as qtg
+from PySide6 import QtOpenGL as qgl
+from PySide6 import QtOpenGLWidgets as qglw
+from PySide6 import QtWidgets as qtw
 
 
 class YCbCrDisplayWidget(qglw.QOpenGLWidget):

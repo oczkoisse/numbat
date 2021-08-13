@@ -70,3 +70,8 @@ convention = "google"
 # - test_
 # TODO: improve regex to allow matching names of form 'setup.*\.py'
 match = '(?!(setup|Ui_|test_)).*\.py'
+
+[tool.isort]
+profile = "black"
+skip_gitignore = true
+atomic = true
