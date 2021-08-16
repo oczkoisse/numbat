@@ -68,8 +68,8 @@ convention = "google"
 # - setup
 # - Ui_
 # - test_
-# TODO: improve regex to allow matching names of form 'setup.*\.py'
-match = '(?!(setup|Ui_|test_)).*\.py'
+match = '(?!(setup|Ui_|test_)).+\.py'
+match_dir = 'src'
 
 [tool.isort]
 profile = "black"
