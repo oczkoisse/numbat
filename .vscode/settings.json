@@ -6,4 +6,9 @@
     "editor.formatOnSave": true,
     "python.linting.pydocstyleEnabled": true,
     "autoDocstring.docstringFormat": "google",
+    "[python]": {
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": true
+        }
+    }
 }
