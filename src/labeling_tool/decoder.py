@@ -65,3 +65,12 @@ class Decoder(qtc.QObject):
             # Slice (create a view) at the frame width
             arr = arr.reshape(-1, buf_width)[:, :frame_width]
         return arr.reshape(-1, frame_width)
+
+    @property
+    def duration(self):
+        """Duration in av.time_base."""
+        return self._container.streams.video[0].duration
+
+    @property
+    def time_base(self):
+        return self._container.streams.video[0].time_base

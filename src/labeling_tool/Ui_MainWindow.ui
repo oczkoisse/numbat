@@ -18,6 +18,16 @@
     <item>
      <widget class="YCbCrDisplayWidget" name="glwgt_video"/>
     </item>
+    <item>
+     <widget class="QSlider" name="seek_bar">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickPosition">
+       <enum>QSlider::NoTicks</enum>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">

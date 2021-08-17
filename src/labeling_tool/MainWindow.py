@@ -39,10 +39,18 @@ class MainWindow(qtw.QMainWindow):
         # Open file for FFMpeg
         if len(file_path) > 0:
             self._decoder = Decoder(file_path)
+            self.ui.seek_bar.setRange(0, self._decoder.duration)
+            self._decoder.decoded.connect(self._on_decoded)
             self._timer = VideoTimer()
             self._timer.bind_decoder(self._decoder)
             self._timer.bind_renderer(self.ui.glwgt_video)
             self._timer.start()
+
+    def _on_decoded(self, pts_sec):
+        """Update seek bar to currently decoded frame."""
+        # Convert pts_sec to stream's time_base
+        seek_to = int(pts_sec / self._decoder.time_base)
+        self.ui.seek_bar.setValue(seek_to)
 
 
 def main():
