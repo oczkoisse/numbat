@@ -144,7 +144,9 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
 
         self._media_path = None
 
-        self._tex_allocated = False
+        # Height, Width of Y, Cb, Cr planes rendered previously
+        # Used to determine if texture needs reallocating or not
+        self._shapes = ([-1, -1], [-1, -1], [-1, -1])
 
     def _compile_gl(self):
         """Compile shaders and link OpenGL program."""
@@ -337,13 +339,17 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
         """
         self.makeCurrent()
 
-        if not self._tex_allocated:
-            for i, plane, tex in zip(
-                range(3), ycbcr, [self._tex_y, self._tex_cb, self._tex_cr]
-            ):
-                GL.glActiveTexture(GL.GL_TEXTURE0 + i)
-                GL.glBindTexture(GL.GL_TEXTURE_2D, tex)
-                h, w = plane.shape
+        for i, plane, tex in zip(
+            range(3), ycbcr, [self._tex_y, self._tex_cb, self._tex_cr]
+        ):
+            GL.glActiveTexture(GL.GL_TEXTURE0 + i)
+            GL.glBindTexture(GL.GL_TEXTURE_2D, tex)
+
+            h, w = plane.shape
+            h_prev, w_prev = self._shapes[i]
+
+            if h != h_prev or w != w_prev:
+                # Allocate new storage for texture
                 GL.glTexImage2D(
                     GL.GL_TEXTURE_2D,
                     0,
@@ -355,25 +361,21 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
                     GL.GL_UNSIGNED_BYTE,
                     None,
                 )
-            self._tex_allocated = True
-
-        for i, plane, tex in zip(
-            range(3), ycbcr, [self._tex_y, self._tex_cb, self._tex_cr]
-        ):
-            GL.glActiveTexture(GL.GL_TEXTURE0 + i)
-            GL.glBindTexture(GL.GL_TEXTURE_2D, tex)
-            h, w = plane.shape
-            GL.glTexImage2D(
-                GL.GL_TEXTURE_2D,
-                0,
-                GL.GL_RED,
-                w,
-                h,
-                0,
-                GL.GL_RED,
-                GL.GL_UNSIGNED_BYTE,
-                plane.reshape(-1),
-            )
+            else:
+                # Reuse previous storage for texture
+                GL.glTexSubImage2D(
+                    GL.GL_TEXTURE_2D,
+                    0,
+                    0,
+                    0,
+                    w,
+                    h,
+                    GL.GL_RED,
+                    GL.GL_UNSIGNED_BYTE,
+                    plane.reshape(-1),
+                )
+            # Note current shape in-place
+            self._shapes[i][:] = h, w
 
         self.doneCurrent()
         self.prepared.emit()
