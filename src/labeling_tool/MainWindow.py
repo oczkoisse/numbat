@@ -43,6 +43,7 @@ class MainWindow(qtw.QMainWindow):
             self.ui.seek_bar.setEnabled(True)
             self.ui.seek_bar.setRange(0, self._decoder.duration)
             self._decoder.decoded.connect(self._on_decoded)
+            self._decoder.finished.connect(self._on_finished)
             self._timer = VideoTimer()
             self._timer.bind_decoder(self._decoder)
             self._timer.bind_renderer(self.ui.glwgt_video)
@@ -53,6 +54,12 @@ class MainWindow(qtw.QMainWindow):
         # Convert pts_sec to stream's time_base
         seek_to = int(pts_sec / self._decoder.time_base)
         self.ui.seek_bar.setValue(seek_to)
+
+    def _on_finished(self):
+        """Handle end of video playback."""
+        self._decoder = None
+        self.ui.seek_bar.setValue(0)
+        self.ui.seek_bar.setDisabled(True)
 
 
 def main():
