@@ -78,9 +78,13 @@ class Decoder(qtc.QObject):
         return arr.reshape(-1, frame_width)
 
     @property
-    def duration(self):
-        """Duration in av.time_base."""
-        return self._container.streams.video[0].duration
+    def duration(self) -> int:
+        """Duration in stream.time_base units."""
+        stream = self._container.streams.video[0]
+        duration = stream.duration
+        if duration is None:
+            duration = self._container.duration / av.time_base / stream.time_base
+        return int(duration + 0.5)
 
     @property
     def time_base(self):
