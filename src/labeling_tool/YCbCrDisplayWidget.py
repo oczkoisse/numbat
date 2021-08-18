@@ -170,19 +170,10 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
 
     def _init_gl_buffers(self):
         """Create and initialize OpenGL buffers."""
-        self._tex_y = GL.glGenTextures(1)
-        # Luma texture (Y)
-        GL.glBindTexture(GL.GL_TEXTURE_2D, self._tex_y)
-        # Wrapping behavior
-        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE)
-        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE)
-        # Resizing behavior
-        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR)
-        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR)
+        # Luma, Cb and Cr textures
+        self._tex_y, self._tex_cb, self._tex_cr = GL.glGenTextures(3)
 
-        # Chroma textures (both Cb and Cr)
-        self._tex_cb, self._tex_cr = GL.glGenTextures(2)
-        for tex in [self._tex_cb, self._tex_cr]:
+        for tex in [self._tex_y, self._tex_cb, self._tex_cr]:
             GL.glBindTexture(GL.GL_TEXTURE_2D, tex)
             # Wrapping behavior
             GL.glTexParameteri(
