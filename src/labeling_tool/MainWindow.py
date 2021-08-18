@@ -18,6 +18,7 @@ class MainWindow(qtw.QMainWindow):
         super().__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.ui.seek_bar.setEnabled(False)
         self._decoder = None
         self._timer = None
 
@@ -39,6 +40,7 @@ class MainWindow(qtw.QMainWindow):
         # Open file for FFMpeg
         if len(file_path) > 0:
             self._decoder = Decoder(file_path)
+            self.ui.seek_bar.setEnabled(True)
             self.ui.seek_bar.setRange(0, self._decoder.duration)
             self._decoder.decoded.connect(self._on_decoded)
             self._timer = VideoTimer()
