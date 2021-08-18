@@ -30,11 +30,17 @@ class Decoder(qtc.QObject):
     def on_decode(self):
         """Handle decode signal.
 
+        If decoding results in a new frame, 'decoded' signal is emitted.
+
         Raises:
             ValueError: If the opened video file format is not supported.
         """
+        if self.is_closed():
+            return
+
         frame = next(self._decoder, None)
         if frame is None:
+            self.close()
             return
 
         if frame.format.name not in ["yuv420p", "yuvj420p"]:
@@ -74,3 +80,13 @@ class Decoder(qtc.QObject):
     @property
     def time_base(self):
         return self._container.streams.video[0].time_base
+
+    def close(self):
+        """Deallocate all decoding resources."""
+        self._container.close()
+        self._decoder = None
+        self._container = None
+
+    def is_closed(self):
+        """Check if decoder has been closed."""
+        return self._container is None
