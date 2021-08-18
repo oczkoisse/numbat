@@ -7,11 +7,15 @@ from PySide6 import QtCore as qtc
 class Decoder(qtc.QObject):
     """Decoder to read a video and emit decoded frames via signals.
 
-    Attributes:
-        decoded (PySide6.QtCore.Signal): Finished decoding.
+    Signals:
+        decoded: Finished decoding.
+        finished: All frames have been decoded and resources deallocated.
+            Any code referencing the decoded object should set it to None.
+            Using decoder beyond this point has undefined behavior.
     """
 
     decoded = qtc.Signal(float, tuple)
+    finished = qtc.Signal()
 
     def __init__(self, file_path: str):
         """Open the video at given path for decoding.
@@ -41,6 +45,7 @@ class Decoder(qtc.QObject):
         frame = next(self._decoder, None)
         if frame is None:
             self.close()
+            self.finished.emit()
             return
 
         if frame.format.name not in ["yuv420p", "yuvj420p"]:
