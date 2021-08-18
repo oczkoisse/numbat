@@ -23,6 +23,7 @@ class MainWindow(qtw.QMainWindow):
         self._timer = None
 
         self.ui.act_file_open.triggered.connect(self.on_file_open)
+        self.ui.seek_bar.seeked.connect(self._on_seeked)
 
     @qtc.Slot()
     def on_file_open(self):
@@ -56,6 +57,10 @@ class MainWindow(qtw.QMainWindow):
             # Convert pts_sec to stream's time_base
             seek_to = int(pts_sec / self._decoder.time_base)
             self.ui.seek_bar.setValue(seek_to)
+
+    def _on_seeked(self, val: int):
+        """Handle seek signal emitted by seek bar."""
+        self._decoder.seek(val)
 
     def _on_finished(self):
         """Handle end of video playback."""

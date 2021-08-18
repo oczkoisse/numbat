@@ -16,9 +16,9 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
     The widget uses OpenGL shaders to convert YCbCr to RGB space. Performance
     should be better than doing the conversion in software.
 
-    Attributes:
-        prepared (PySide6.QtCore.Signal): Finished preparations for rendering
-        rendered (PySide6.QtCore.Signal): Finished rendering the frame
+    Signals:
+        prepared: Finished preparations for rendering.
+        rendered: Finished rendering the frame.
     """
 
     prepared = qtc.Signal()

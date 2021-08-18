@@ -19,7 +19,7 @@
      <widget class="YCbCrDisplayWidget" name="glwgt_video"/>
     </item>
     <item>
-     <widget class="QSlider" name="seek_bar">
+     <widget class="SeekBar" name="seek_bar">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
@@ -78,6 +78,11 @@
    <class>YCbCrDisplayWidget</class>
    <extends>QOpenGLWidget</extends>
    <header>labeling_tool/YCbCrDisplayWidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SeekBar</class>
+   <extends>QSlider</extends>
+   <header>labeling_tool/widgets.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

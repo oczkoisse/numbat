@@ -1,7 +1,31 @@
-"""Provides VideoTimer, a utility class to coordinate frame timings."""
+"""Utility classes to coordinate frame timings."""
 from typing import Any, Tuple
 
 from PySide6 import QtCore as qtc
+
+
+class AlignableTimer:
+    """A timer whose starting time can be aligned to any time value."""
+
+    def __init__(self):
+        """Create a new timer."""
+        self._base = None
+        self._clock = qtc.QElapsedTimer()
+
+    def start(self, ms=0):
+        """Start the clock set to given initial time.
+
+        If the timer is already started, it is restarted.
+
+        Args:
+            ms: Time in milliseconds that timer is set to before starting.
+        """
+        self._base = ms
+        self._clock.start()
+
+    def elapsed(self) -> int:
+        """Time elapsed in milliseconds since the timer was last started."""
+        return self._base + self._clock.elapsed()
 
 
 class VideoTimer(qtc.QObject):
@@ -12,10 +36,10 @@ class VideoTimer(qtc.QObject):
     A video timer provides the functionality to time the various stages of
     reading a video by emitting 'decode', 'prepare' and 'render' signals.
 
-    Attributes:
-        decode (PySide6.QtCore.Signal): Start decoding
-        prepare (PySide6.QtCore.Signal): Allocate resources for rendering
-        render (PySide6.QtCore.Signal): Start rendering
+    Signals:
+        decode: Start decoding.
+        prepare: Allocate resources for rendering.
+        render: Start rendering.
     """
 
     decode = qtc.Signal()
@@ -26,7 +50,7 @@ class VideoTimer(qtc.QObject):
         """Create a video timer."""
         super().__init__()
         # Reference clock to compare the timestamps with
-        self._clock = qtc.QElapsedTimer()
+        self._clock = AlignableTimer()
         # Single shot timer that sends the 'render' signal on timeout
         self._timer = qtc.QTimer()
         self._timer.setSingleShot(True)
@@ -39,19 +63,24 @@ class VideoTimer(qtc.QObject):
         self._present_at = 0
 
     @qtc.Slot(float, tuple)
-    def on_decoded(self, pt_sec: float, frame: Tuple):
+    def on_decoded(self, pt_sec: float, frame: Tuple, seeked: bool):
         """Get notified when a frame is decoded.
 
         Args:
-            pt_sec (float): Presentation time in seconds
-            frame (Tuple): Frame components received from decoder
+            pt_sec: Presentation time in seconds.
+            frame: Frame components received from decoder.
+            seeked: Whether decoded frame is a result of seek operation.
         """
+        present_at_ms = int(pt_sec * 1000)
         # First frame
         if self._last_presented_at < 0:
             # Start the clock only after decoding the first frame
             self._clock.start()
+        elif seeked:
+            # Pretend that we have 30 ms to render next frame
+            self._clock.start(present_at_ms - 30)
+            self._last_presented_at = -1
 
-        present_at_ms = int(pt_sec * 1000)
         if present_at_ms <= self._last_presented_at:
             # Skip frame since last frame was drawn too late
             qtc.qDebug("Skipping frame with pts {}".format(present_at_ms))
