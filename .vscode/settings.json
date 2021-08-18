@@ -5,10 +5,12 @@
     "python.formatting.provider": "black",
     "python.linting.pydocstyleEnabled": true,
     "autoDocstring.docstringFormat": "google",
+    "rewrap.autoWrap.enabled": true,
     "[python]": {
         "editor.formatOnSave": true,
         "editor.codeActionsOnSave": {
             "source.organizeImports": true
-        }
-    }
+        },
+        "rewrap.wrappingColumn": 88,
+    },
 }
