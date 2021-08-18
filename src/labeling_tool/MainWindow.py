@@ -50,10 +50,12 @@ class MainWindow(qtw.QMainWindow):
             self._timer.start()
 
     def _on_decoded(self, pts_sec):
-        """Update seek bar to currently decoded frame."""
-        # Convert pts_sec to stream's time_base
-        seek_to = int(pts_sec / self._decoder.time_base)
-        self.ui.seek_bar.setValue(seek_to)
+        """Update seek bar to decoded frame's timestamp."""
+        # If slider is being held down, seek bar should not be updated
+        if not self.ui.seek_bar.isSliderDown():
+            # Convert pts_sec to stream's time_base
+            seek_to = int(pts_sec / self._decoder.time_base)
+            self.ui.seek_bar.setValue(seek_to)
 
     def _on_finished(self):
         """Handle end of video playback."""
