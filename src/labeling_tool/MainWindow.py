@@ -31,6 +31,9 @@ class MainWindow(qtw.QMainWindow):
     @qtc.Slot()
     def on_file_open(self):
         """Handle file open dialog."""
+        if self._timer is not None and not self._timer.is_paused():
+            self._timer.pause()
+
         file_path, _ = qtw.QFileDialog.getOpenFileName(
             self,
             "Choose video",
@@ -53,6 +56,8 @@ class MainWindow(qtw.QMainWindow):
             self._timer = VideoTimer()
             self._timer.bind_decoder(self._decoder)
             self._timer.bind_renderer(self.ui.glwgt_video)
+
+        if self._timer is not None:
             self._timer.start()
 
     def _on_decoded(self, pts_sec):
