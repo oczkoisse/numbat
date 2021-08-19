@@ -55,7 +55,7 @@ commands = pytest {posargs}
 """
 
 [tool.interrogate]
-fail-under = 80
+fail-under = 95
 exclude = [
   "setup.py",
   "src/*Ui_*.py", # Ignore .py files auto-generated from .ui files
