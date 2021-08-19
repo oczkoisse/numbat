@@ -61,6 +61,8 @@ class VideoTimer(qtc.QObject):
         self._last_presented_at = -1
         # Presentation time in ms
         self._present_at = 0
+        # Pause/Resume functionality
+        self._running = False
 
     @qtc.Slot(float, tuple)
     def on_decoded(self, pt_sec: float, frame: Tuple, seeked: bool):
@@ -107,9 +109,13 @@ class VideoTimer(qtc.QObject):
 
     @qtc.Slot()
     def on_rendered(self):
-        """Get notified when rendering is finished."""
-        # Start the cycle again
-        self.decode.emit()
+        """Get notified when rendering is finished.
+
+        Emits 'decode' signal if not paused.
+        """
+        if self._running:
+            # Start the cycle again
+            self.decode.emit()
 
     @qtc.Slot()
     def on_prepared(self):
@@ -125,12 +131,36 @@ class VideoTimer(qtc.QObject):
         """Stop the timer."""
         self._timer.stop()
 
+    def pause(self):
+        """Pause the timer.
+
+        When paused, the timer will not emit 'decode' signal after emitting
+        'rendered' signal. This operation is idempotent i.e. it has no effect
+        if already paused.
+        """
+        self._running = False
+
+    def is_paused(self) -> bool:
+        """Whether the timer is paused.
+
+        Returns:
+            bool: True if paused, False otherwise.
+        """
+        return not self._running
+
     def start(self):
         """Start sending timed signals to decoder and renderer.
 
-        Must bind a decoder and renderer before calling.
+        Must bind a decoder and renderer before calling. This will resume the
+        timer if it was paused previously. Emits 'decode' signal. This
+        operation is idempotent i.e. it has no effect if already started.
         """
-        self.decode.emit()
+        if not self._running:
+            self._running = True
+            self._clock = AlignableTimer()
+            prev_ts = max(0, self._last_presented_at)
+            self._clock.start(ms=prev_ts)
+            self.decode.emit()
 
     def bind_decoder(self, decoder: Any):
         """Bind a decoder with this timer.

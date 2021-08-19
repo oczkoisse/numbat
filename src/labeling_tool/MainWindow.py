@@ -18,12 +18,15 @@ class MainWindow(qtw.QMainWindow):
         super().__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        # Play/pause button and seekbar are disabled by default
+        self.ui.btn_play.setEnabled(False)
         self.ui.seek_bar.setEnabled(False)
         self._decoder = None
         self._timer = None
 
         self.ui.act_file_open.triggered.connect(self.on_file_open)
         self.ui.seek_bar.seeked.connect(self._on_seeked)
+        self.ui.btn_play.clicked.connect(self._on_play)
 
     @qtc.Slot()
     def on_file_open(self):
@@ -41,6 +44,8 @@ class MainWindow(qtw.QMainWindow):
         # Open file for FFMpeg
         if len(file_path) > 0:
             self._decoder = Decoder(file_path)
+            # Enable play/pause button and seekbar
+            self.ui.btn_play.setEnabled(True)
             self.ui.seek_bar.setEnabled(True)
             self.ui.seek_bar.setRange(0, self._decoder.duration)
             self._decoder.decoded.connect(self._on_decoded)
@@ -61,12 +66,26 @@ class MainWindow(qtw.QMainWindow):
     def _on_seeked(self, val: int):
         """Handle seek signal emitted by seek bar."""
         self._decoder.seek(val)
+        if self._timer.is_paused():
+            self._timer.decode.emit()
 
     def _on_finished(self):
         """Handle end of video playback."""
         self._decoder = None
         self.ui.seek_bar.setValue(0)
         self.ui.seek_bar.setDisabled(True)
+        self.ui.btn_play.setDisabled(True)
+
+    def _on_play(self):
+        """Handle play/pause button click.
+
+        Toggles the video timer.
+        """
+        if self._timer is not None:
+            if self._timer.is_paused():
+                self._timer.start()
+            else:
+                self._timer.pause()
 
 
 def main():
