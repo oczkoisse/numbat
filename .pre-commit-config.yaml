@@ -28,3 +28,11 @@ repos:
     rev: 5.9.3
     hooks:
     -   id: isort
+-   repo: https://github.com/econchick/interrogate
+    rev: 1.4.0
+    hooks:
+    -   id: interrogate
+        # Bug: interrogate ignores the 'exclude' option
+        # See https://github.com/econchick/interrogate/issues/60
+        # pass_filenames is the suggested workaround
+        pass_filenames: false
