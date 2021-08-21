@@ -40,7 +40,8 @@ env.Append(BUILDERS={"Uic": uic_builder})
 
 # Qt .ui files
 ui_source = env.Glob("src/labeling_tool/*.ui")
-env.Uic(source=ui_source)
+ui_py_source = env.Uic(source=ui_source)
+env.Alias("ui", ui_py_source)
 
 py_source = env.Glob("src/labeling_tool/*.py", exclude=["Ui_*.py"])
 
