@@ -163,6 +163,8 @@ cython_debug/
 ### Qt ###
 # Ignore auto-generated .py files from .ui
 *_ui.py
+# Ignore auto-generate .py files from .qrc
+*_rc.py
 
 ### Misc ###
 # Data directory
