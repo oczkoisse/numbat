@@ -66,11 +66,12 @@ exclude = [
 [tool.pydocstyle]
 convention = "google"
 # Don't match any .py file starting with
-# - setup
-# - test_
+# - setup    setup.py
+# - test_    test files
 # Don't match any .py files ending with
-# - _ui
-match = '(?!(setup|test_)).+(?<!_ui)\.py'
+# - _ui      auto-generated from .ui files
+# - _rc      auto-generated from .qrc files
+match = '(?!(setup|test_)).+(?<!(_ui|_rc))\.py'
 match_dir = 'src'
 
 [tool.isort]
