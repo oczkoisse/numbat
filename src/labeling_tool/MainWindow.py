@@ -3,7 +3,7 @@ from PySide6 import QtCore as qtc
 from PySide6 import QtWidgets as qtw
 
 from labeling_tool.decoder import Decoder
-from labeling_tool.Ui_MainWindow import Ui_MainWindow
+from labeling_tool.MainWindow_ui import Ui_MainWindow
 from labeling_tool.VideoTimer import VideoTimer
 
 

@@ -162,7 +162,7 @@ cython_debug/
 
 ### Qt ###
 # Ignore auto-generated .py files from .ui
-Ui_*.py
+*_ui.py
 
 ### Misc ###
 # Data directory

@@ -13,7 +13,7 @@ exclude =
     .eggs
     *.egg
     # Auto-generated from .ui files
-    Ui_*.py
+    *_ui.py
     # Virtual environment
     .venv
     SConstruct

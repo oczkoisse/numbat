@@ -33,7 +33,7 @@ else:
 uic_builder = Builder(
     # Since we put the executable on PATH, we can call it directly
     action="pyside6-uic $SOURCE -o $TARGET",
-    suffix=".py",
+    suffix="_ui.py",
     src_suffix=".ui",
 )
 env.Append(BUILDERS={"Uic": uic_builder})

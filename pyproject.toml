@@ -58,7 +58,7 @@ commands = pytest {posargs}
 fail-under = 95
 exclude = [
   "setup.py",
-  "src/*Ui_*.py", # Ignore .py files auto-generated from .ui files
+  "src/*_ui.py", # Ignore .py files auto-generated from .ui files
   "tests/*.py",   # Ignore tests
 ]
 
@@ -66,9 +66,10 @@ exclude = [
 convention = "google"
 # Don't match any .py file starting with
 # - setup
-# - Ui_
 # - test_
-match = '(?!(setup|Ui_|test_)).+\.py'
+# Don't match any .py files ending with
+# - _ui
+match = '(?!(setup|test_)).+(?<!_ui)\.py'
 match_dir = 'src'
 
 [tool.isort]
