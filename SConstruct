@@ -43,7 +43,7 @@ ui_source = env.Glob("src/labeling_tool/*.ui")
 ui_py_source = env.Uic(source=ui_source)
 env.Alias("ui", ui_py_source)
 
-py_source = env.Glob("src/labeling_tool/*.py", exclude=["Ui_*.py"])
+py_source = env.Glob("src/labeling_tool/*.py")
 
 purelib = env.Whl("purelib", py_source, root="src")
 whl = env.WhlFile(purelib)
