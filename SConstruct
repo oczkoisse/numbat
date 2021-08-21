@@ -1,8 +1,7 @@
 from pathlib import Path
 
-import pytoml as toml
 import enscons
-
+import pytoml as toml
 
 metadata = dict(toml.load(open("pyproject.toml")))["tool"]["enscons"]
 
@@ -23,17 +22,19 @@ if uic is None:
 else:
     # The converter would be located at env\Scripts|bin\pyside6-uic.exe
     # So we put env\Scripts|bin\ on PATH
-    env.PrependENVPath('PATH', Path(uic).parent)
+    env.PrependENVPath("PATH", Path(uic).parent)
     # and env\lib\site-packages on PYTHONPATH for above executable to access
     # This is a bit of a hack, but it is probably the only way because
     # VirtualEnv() in SCons seems to return virtual environment path relative
     # to SConstruct file instead of the actual virtual environment the script
     # is running in, which is problematic for isolated builds
-    env.PrependENVPath('PYTHONPATH', Path(uic).parent.parent / 'lib' / 'site-packages')
+    env.PrependENVPath("PYTHONPATH", Path(uic).parent.parent / "lib" / "site-packages")
 
 uic_builder = Builder(
     # Since we put the executable on PATH, we can call it directly
-    action="pyside6-uic $SOURCE -o $TARGET", suffix=".py", src_suffix=".ui"
+    action="pyside6-uic $SOURCE -o $TARGET",
+    suffix=".py",
+    src_suffix=".ui",
 )
 env.Append(BUILDERS={"Uic": uic_builder})
 
