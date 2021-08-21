@@ -35,6 +35,7 @@ uic_builder = Builder(
     action="pyside6-uic $SOURCE -o $TARGET",
     suffix="_ui.py",
     src_suffix=".ui",
+    single_source=True,  # Call once for each source file
 )
 env.Append(BUILDERS={"Uic": uic_builder})
 
