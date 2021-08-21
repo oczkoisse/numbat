@@ -16,3 +16,4 @@ exclude =
     Ui_*.py
     # Virtual environment
     .venv
+    SConstruct
