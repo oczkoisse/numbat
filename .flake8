@@ -14,6 +14,8 @@ exclude =
     *.egg
     # Auto-generated from .ui files
     *_ui.py
+    # Auto-generate from .qrc files
+    *_rc.py
     # Virtual environment
     .venv
     SConstruct
