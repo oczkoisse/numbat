@@ -8,7 +8,7 @@ author_email = "oczkoisse@pm.me"
 classifiers = [
   "Programming Language :: Python :: 3",
 ]
-description = "Tool for labeling data"
+description = "Tool for annotating videos"
 dependencies = [
   "PySide6",
   "PyOpenGL",
@@ -17,10 +17,10 @@ dependencies = [
   "numpy"
 ]
 license = "LGPL"
-name = "labeling-tool"
-packages = ["labeling_tool"]
+name = "numbat"
+packages = ["numbat"]
 src_root = "src"
-url = "https://github.com/oczkoisse/labeling-tool"
+url = "https://github.com/oczkoisse/numbat"
 version = "0.0.1"
 
 [tool.enscons.optional-dependencies]
@@ -31,7 +31,7 @@ test = [
 ]
 
 [tool.enscons.entry_points]
-console_scripts = ["labeling-tool = labeling_tool.MainWindow:main"]
+console_scripts = ["numbat = numbat.MainWindow:main"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"

@@ -101,12 +101,12 @@
   <customwidget>
    <class>YCbCrDisplayWidget</class>
    <extends>QOpenGLWidget</extends>
-   <header>labeling_tool/YCbCrDisplayWidget.h</header>
+   <header>numbat/YCbCrDisplayWidget.h</header>
   </customwidget>
   <customwidget>
    <class>SeekBar</class>
    <extends>QSlider</extends>
-   <header>labeling_tool/widgets.h</header>
+   <header>numbat/widgets.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

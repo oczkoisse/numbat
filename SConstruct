@@ -63,12 +63,12 @@ env.Append(
 )
 
 # Qt .ui files
-ui_source = env.Glob("src/labeling_tool/*.ui")
+ui_source = env.Glob("src/numbat/*.ui")
 ui_py_source = env.Uic(source=ui_source)
 ui = env.Alias("ui", ui_py_source)
 
 # Qt .qrc files
-qrc_source = env.Glob("src/labeling_tool/*.qrc")
+qrc_source = env.Glob("src/numbat/*.qrc")
 qrc_py_source = env.Rcc(source=qrc_source)
 qrc = env.Alias("qrc", qrc_py_source)
 
@@ -76,7 +76,7 @@ qrc = env.Alias("qrc", qrc_py_source)
 env.Alias("qt", [qrc, ui])
 
 # All .py files (auto-generated or not) should go into the .whl
-py_source = env.Glob("src/labeling_tool/*.py")
+py_source = env.Glob("src/numbat/*.py")
 purelib = env.Whl("purelib", py_source, root="src")
 whl = env.WhlFile(purelib)
 

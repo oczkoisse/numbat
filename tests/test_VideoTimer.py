@@ -2,7 +2,7 @@ import time
 
 from PySide6 import QtCore as qtc
 
-from labeling_tool.VideoTimer import VideoTimer
+from numbat.VideoTimer import VideoTimer
 
 
 class DummyDecoder(qtc.QObject):
