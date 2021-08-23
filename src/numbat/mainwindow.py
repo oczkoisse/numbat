@@ -3,8 +3,8 @@ from PySide6 import QtCore as qtc
 from PySide6 import QtWidgets as qtw
 
 from numbat.decoder import Decoder
-from numbat.MainWindow_ui import Ui_MainWindow
-from numbat.VideoTimer import VideoTimer
+from numbat.mainwindow_ui import Ui_MainWindow
+from numbat.videotimer import VideoTimer
 
 
 class MainWindow(qtw.QMainWindow):

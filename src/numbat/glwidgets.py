@@ -1,4 +1,4 @@
-"""Provides YCbCrDisplayWidget, a widget to display YCbCr video frames."""
+"""OpenGL based custom Qt widgets."""
 from textwrap import dedent
 from typing import Tuple
 

@@ -101,7 +101,7 @@
   <customwidget>
    <class>YCbCrDisplayWidget</class>
    <extends>QOpenGLWidget</extends>
-   <header>numbat/YCbCrDisplayWidget.h</header>
+   <header>numbat/glwidgets.h</header>
   </customwidget>
   <customwidget>
    <class>SeekBar</class>
