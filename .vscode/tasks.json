@@ -25,5 +25,25 @@
             },
             "problemMatcher": []
         },
+        {
+            "label": "Compile Qt",
+            "type": "shell",
+            "command": "${command:python.interpreterPath}",
+            "args": [
+                "-m",
+                "SCons",
+                "qt"
+            ],
+            "detail": "Uses SCons to generate Python files from .ui and .rc files",
+            "presentation": {
+                "echo": true,
+                "reveal": "never",
+                "focus": false,
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
     ]
 }
