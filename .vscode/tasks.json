@@ -8,7 +8,7 @@
             "type": "shell",
             "command": "${command:python.interpreterPath}",
             "options": {
-                "cwd": "src/numbat/"
+                "cwd": "src${pathSeparator}numbat${pathSeparator}"
             },
             "args": [
                 "-c",
