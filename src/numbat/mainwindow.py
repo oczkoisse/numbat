@@ -2,6 +2,7 @@
 from PySide6 import QtCore as qtc
 from PySide6 import QtWidgets as qtw
 
+from numbat.aboutdialog import AboutDialog
 from numbat.decoder import Decoder
 from numbat.mainwindow_ui import Ui_MainWindow
 from numbat.videotimer import VideoTimer
@@ -25,6 +26,7 @@ class MainWindow(qtw.QMainWindow):
         self._timer = None
 
         self.ui.act_file_open.triggered.connect(self.on_file_open)
+        self.ui.act_about.triggered.connect(self._on_about_dialog)
         self.ui.seek_bar.seeked.connect(self._on_seeked)
         self.ui.btn_play.clicked.connect(self._on_play)
 
@@ -91,6 +93,10 @@ class MainWindow(qtw.QMainWindow):
                 self._timer.start()
             else:
                 self._timer.pause()
+
+    def _on_about_dialog(self):
+        dlg_about = AboutDialog(self)
+        dlg_about.exec()
 
 
 def main():
