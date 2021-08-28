@@ -2,11 +2,12 @@ import time
 
 from PySide6 import QtCore as qtc
 
-from numbat.VideoTimer import VideoTimer
+from numbat.videotimer import VideoTimer
 
 
 class DummyDecoder(qtc.QObject):
-    decoded = qtc.Signal(float, tuple)
+    decoded = qtc.Signal(float, tuple, bool)
+    finished = qtc.Signal()
 
     def __init__(self, seq_pts, decode_time=0.1):
         super().__init__()
@@ -18,7 +19,9 @@ class DummyDecoder(qtc.QObject):
         pts_sec = next(self._seq_pts, None)
         if pts_sec is not None:
             time.sleep(self._decode_time)
-            self.decoded.emit(pts_sec, None)
+            self.decoded.emit(pts_sec, None, False)
+        else:
+            self.finished.emit()
 
 
 class DummyRenderer(qtc.QObject):
