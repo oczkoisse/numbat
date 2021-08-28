@@ -43,7 +43,11 @@
                 "showReuseMessage": false,
                 "clear": false
             },
-            "problemMatcher": []
-        },
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
     ]
 }
