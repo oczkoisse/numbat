@@ -29,8 +29,15 @@
      <layout class="QHBoxLayout" name="controls">
       <item>
        <widget class="QPushButton" name="btn_play">
-        <property name="text">
-         <string>Play</string>
+        <property name="icon">
+         <iconset resource="mainwindow.qrc">
+          <normaloff>:/images/play.svg</normaloff>:/images/play.svg</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
         </property>
        </widget>
       </item>
@@ -109,6 +116,8 @@
    <header>numbat/widgets.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="mainwindow.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -1,5 +1,6 @@
 """Main window of application."""
 from PySide6 import QtCore as qtc
+from PySide6 import QtGui as qtg
 from PySide6 import QtWidgets as qtw
 
 from numbat.aboutdialog import AboutDialog
@@ -29,6 +30,9 @@ class MainWindow(qtw.QMainWindow):
         self.ui.act_about.triggered.connect(self._on_about_dialog)
         self.ui.seek_bar.seeked.connect(self._on_seeked)
         self.ui.btn_play.clicked.connect(self._on_play)
+
+        self._play_icon = qtg.QIcon(":/images/play.svg")
+        self._pause_icon = qtg.QIcon(":/images/pause.svg")
 
     @qtc.Slot()
     def on_file_open(self):
@@ -60,6 +64,7 @@ class MainWindow(qtw.QMainWindow):
             self._timer.bind_renderer(self.ui.glwgt_video)
 
         if self._timer is not None:
+            self.ui.btn_play.setIcon(self._pause_icon)
             self._timer.start()
 
     def _on_decoded(self, pts_sec):
@@ -90,8 +95,10 @@ class MainWindow(qtw.QMainWindow):
         """
         if self._timer is not None:
             if self._timer.is_paused():
+                self.ui.btn_play.setIcon(self._pause_icon)
                 self._timer.start()
             else:
+                self.ui.btn_play.setIcon(self._play_icon)
                 self._timer.pause()
 
     def _on_about_dialog(self):
