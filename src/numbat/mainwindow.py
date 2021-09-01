@@ -67,8 +67,12 @@ class MainWindow(qtw.QMainWindow):
             self.ui.btn_play.setIcon(self._pause_icon)
             self._timer.start()
 
-    def _on_decoded(self, pts_sec):
-        """Update seek bar to decoded frame's timestamp."""
+    def _on_decoded(self, pts_sec: float):
+        """Update seek bar to decoded frame's timestamp.
+
+        Args:
+            pts_sec: Stream timestamp in seconds.
+        """
         # If slider is being held down, seek bar should not be updated
         if not self.ui.seek_bar.isSliderDown():
             # Convert pts_sec to stream's time_base
@@ -76,7 +80,11 @@ class MainWindow(qtw.QMainWindow):
             self.ui.seek_bar.setValue(seek_to)
 
     def _on_seeked(self, val: int):
-        """Handle seek signal emitted by seek bar."""
+        """Handle seek signal emitted by seek bar.
+
+        Args:
+            val: Slider position.
+        """
         self._decoder.seek(val)
         if self._timer.is_paused():
             self._timer.decode.emit()
