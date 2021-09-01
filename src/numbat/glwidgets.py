@@ -142,8 +142,6 @@ class YCbCrDisplayWidget(qglw.QOpenGLWidget):
         self._tex_cb = None
         self._tex_cr = None
 
-        self._media_path = None
-
         # Height, Width of Y, Cb, Cr planes rendered previously
         # Used to determine if texture needs reallocating or not
         self._shapes = ([-1, -1], [-1, -1], [-1, -1])
