@@ -110,6 +110,7 @@ class MainWindow(qtw.QMainWindow):
                 self._timer.pause()
 
     def _on_about_dialog(self):
+        """Show 'About' dialog."""
         dlg_about = AboutDialog(self)
         dlg_about.exec()
 
