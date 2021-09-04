@@ -51,6 +51,7 @@ isolated_build = true
 deps =
     pytest >= 6.0 # for pytest settings in pyproject.toml
     pytest-qt
+passenv = DISPLAY XAUTHORITY
 commands = pytest {posargs}
 """
 
