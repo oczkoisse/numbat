@@ -24,10 +24,15 @@ url = "https://github.com/oczkoisse/numbat"
 version = "0.0.1"
 
 [tool.enscons.optional-dependencies]
-test = [
+dev = [
   "pytest >= 6.0", # Remember to change tool.pytest.ini_options.minversion
   "pytest-qt",
   "tox >= 3.24.1", # Remember to change tox.minversion
+  "pytest-cov",
+  "black",
+  "flake8",
+  "pydocstyle",
+  "isort",
 ]
 
 [tool.enscons.entry_points]
