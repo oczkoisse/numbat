@@ -4,6 +4,9 @@
     "python.linting.enabled": true,
     "python.formatting.provider": "black",
     "python.linting.pydocstyleEnabled": true,
+    "python.linting.pydocstyleArgs": [
+        "--convention=google"
+    ],
     "autoDocstring.docstringFormat": "google",
     "[python]": {
         "editor.formatOnSave": true,
