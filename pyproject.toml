@@ -9,6 +9,7 @@ classifiers = [
   "Programming Language :: Python :: 3",
 ]
 description = "Tool for annotating videos"
+readme = "README.md"
 dependencies = [
   "PySide6",
   "PyOpenGL",
